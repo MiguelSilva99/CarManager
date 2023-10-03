@@ -1,4 +1,4 @@
-package carManagerArray;
+package carManagerV8;
 
 public class CarInfo {
     private int id;

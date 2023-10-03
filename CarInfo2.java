@@ -1,13 +1,13 @@
-package carManagerArray;
+package carManagerV8;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import carManagerFromZero.CarInfo;
+
 
 public class CarInfo2 {
-    private static final String FILENAME = "C:/Users/migue/Downloads/cardata4.txt";
+    private static final String FILENAME = "C:/Users/migue/Downloads/cardata9.txt";
     private static ArrayList<String> carInfoList = new ArrayList<>();
     private static int idCounter = 0; // Initialize the ID counter
 
@@ -18,7 +18,9 @@ public class CarInfo2 {
         while (true) {
             System.out.println("1. Enter Car Information");
             System.out.println("2. Search for Car by Line Number");
-            System.out.println("3. Exit");
+            System.out.println("3. Display List of Car Information");
+            System.out.println("4. Remove Car by Line Number");
+            System.out.println("5. Exit");
             System.out.print("Select an option: ");
 
             int choice = scanner.nextInt();
@@ -36,6 +38,18 @@ public class CarInfo2 {
                     searchCarByLine(searchLine);
                     break;
                 case 3:
+                    System.out.println("List of Car Information:");
+                    for (String carInfoItem : carInfoList) {
+                        System.out.println(carInfoItem);
+                    }
+                    break;
+                case 4:
+                    System.out.print("Enter the line number to remove: ");
+                    int removeLine = scanner.nextInt();
+                    scanner.nextLine(); // Consume the newline character
+                    removeCarByLine(removeLine);
+                    break;
+                case 5:
                     System.out.println("Exiting...");
                     scanner.close();
                     System.exit(0);
@@ -76,9 +90,6 @@ public class CarInfo2 {
         return new CarInfo(id, brand, model, seats, licensePlate, engineType, currentAutonomy);
     }
     
-
-    // ... Rest of your code
-
     // Method to load car information from the file into ArrayList
     public static void loadCarInfoFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader(FILENAME))) {
@@ -106,6 +117,47 @@ public class CarInfo2 {
             System.out.println("Line number " + line + " not found.");
         }
     }
+    
+    public static void removeCarByLine(int lineToRemove) {
+    	if (lineToRemove >= 1 && lineToRemove <= carInfoList.size()) {
+            // Remove the car information from the ArrayList
+            carInfoList.remove(lineToRemove - 1);
+            
+            // Renumber the IDs
+            renumberCarIDs();
+            
+            // Update the file with the modified car information
+            updateFileWithCarInfo();
+            
+            System.out.println("Car removed successfully.");
+        } else {
+            System.out.println("Line number " + lineToRemove + " not found.");
+        }
+    }
+    
+    
+    public static void renumberCarIDs() {
+        for (int i = 0; i < carInfoList.size(); i++) {
+            String line = carInfoList.get(i);
+            String newLine = "ID#" + (i + 1) + line.substring(line.indexOf(" - "));
+            carInfoList.set(i, newLine);
+        }
+    }
+    
+    public static void updateFileWithCarInfo() {
+        try (FileWriter writer = new FileWriter(FILENAME);
+             BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+
+            for (String carInfoItem : carInfoList) {
+                bufferedWriter.write(carInfoItem);
+                bufferedWriter.newLine();
+            }
+
+            System.out.println("File updated with modified car information.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     // Method to save car information to the file and ArrayList
     public static void saveCarInfoToFile(CarInfo carInfo) {
@@ -122,7 +174,9 @@ public class CarInfo2 {
             bufferedWriter.write(formattedEntry);
             bufferedWriter.newLine();
 
-            System.out.println("Car information saved to cardata4.txt");
+            System.out.println("Car information saved to cardata9.txt");
+            renumberCarIDs();
+            updateFileWithCarInfo();
         } catch (IOException e) {
             e.printStackTrace();
         }
