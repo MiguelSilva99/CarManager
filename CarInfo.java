@@ -1,4 +1,6 @@
-package carManagerV8;
+package carManagerV10;
+
+import java.time.LocalDateTime;
 
 public class CarInfo {
     private int id;
@@ -8,6 +10,8 @@ public class CarInfo {
     private String licensePlate;
     private String engineType;
     private int currentAutonomy;
+    private LocalDateTime pickupDateTime;
+    private LocalDateTime dropoffDateTime;
 
     public CarInfo(int id, String brand, String model, int seats, String licensePlate, String engineType, int currentAutonomy) {
         this.id = id;
