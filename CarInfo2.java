@@ -3,6 +3,7 @@ package carManagerV10;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -47,7 +48,7 @@ public class CarInfo2 {
                     break;
                     
                 case 3:
-                    System.out.print("Enter the line number to search for: ");
+                    System.out.print("Enter the ID number to search for: ");
                     int searchLine = scanner.nextInt();
                     scanner.nextLine(); // Consume the newline character
                     searchCarByLine(searchLine);
@@ -73,7 +74,9 @@ public class CarInfo2 {
                     createReservation(scanner);
                     break;
                 case 8:
-                    displayReservations();
+                	 String reservationsString = reservationsToString();
+                	 System.out.println(reservationsString);
+                    
                     break;
                 default:
                     System.out.println("Invalid option. Please try again.");
@@ -181,7 +184,7 @@ public class CarInfo2 {
     }
     
  // Method to create a reservation
-    public static void createReservation(Scanner scanner) {
+    public static Reservation createReservation(Scanner scanner) {
         // Input customer information
         System.out.print("Enter Customer Name: ");
         String customerName = scanner.nextLine();
@@ -190,18 +193,35 @@ public class CarInfo2 {
         System.out.print("Enter Car ID for Reservation: ");
         int carId = scanner.nextInt();
         scanner.nextLine(); // Consume the newline character
-
+        
+        LocalDateTime pickupDateTime;
+        LocalDateTime dropoffDateTime;
         // Input pickup and drop-off date and time
-        System.out.print("Enter Pickup Date and Time (yyyy-MM-dd HH:mm): ");
-        LocalDateTime pickupDateTime = LocalDateTime.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        try {
+            System.out.print("Enter Pickup Date and Time (yyyy-MM-dd HH:mm): ");
+            pickupDateTime = LocalDateTime.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
-        System.out.print("Enter Drop-off Date and Time (yyyy-MM-dd HH:mm): ");
-        LocalDateTime dropoffDateTime = LocalDateTime.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            System.out.print("Enter Drop-off Date and Time (yyyy-MM-dd HH:mm): ");
+            dropoffDateTime = LocalDateTime.parse(scanner.nextLine(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date and time format.");
+            return null; // Return null to indicate that the reservation was not created
+        }
+        CarInfo selectedCar = null;
+		Reservation reservation = new Reservation(customerName, selectedCar, pickupDateTime, dropoffDateTime);
+        
+        reservations.add(reservation);
+        
+        ReservationFileWriter.saveReservationsToFile(reservations);
+
+        System.out.println("Reservation created successfully.");
+        
+        return reservation;
 
         // Find the car by ID
-        CarInfo selectedCar = findCarById(carId);
+       // CarInfo selectedCar = findCarById(carId);
 
-        if (selectedCar != null) {
+       /* if (selectedCar != null) {
             // Create a reservation
             Reservation reservation = new Reservation(customerName, selectedCar, pickupDateTime, dropoffDateTime);
             
@@ -212,9 +232,14 @@ public class CarInfo2 {
             ReservationFileWriter.saveReservationsToFile(reservations);
             
             System.out.println("Reservation created successfully.");
+            
+            // Return the created reservation
+            return reservation;
         } else {
             System.out.println("Car not found.");
+            return null; // Return null to indicate that the reservation was not created
         }
+        */
     }
     
  // Method to input driver information
@@ -249,57 +274,65 @@ public class CarInfo2 {
     }
     
     
-    public static void loadReservationsFromFile() {
-        reservations.clear(); // Clear the existing reservations
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(RESERVATION_FILENAME))) {
-            String line;
-            Reservation reservation = null; // Initialize to null
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("Reservation ID:")) {
-                    // Start of a new reservation
-                    if (reservation != null) {
-                        // Add the previous reservation to the list
-                        reservations.add(reservation);
-                    }
-                    // Parse the reservation details
-                    reservation = parseReservation(line);
-                } else if (line.equals("--------------------------------------")) {
-                    // End of a reservation
-                    reservation = null; // Reset to null
-                }
-            }
-            // Add the last reservation (if any)
-            if (reservation != null) {
-                reservations.add(reservation);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static ArrayList<Reservation> loadReservations() {
+        return ReservationsFileReader.readReservationsFromFile();
     }
-
     // Helper method to parse a single reservation from a string
-    private static Reservation parseReservation(String reservationString) {
+  /*  private static Reservation parseReservation(String reservationString) {
         String[] lines = reservationString.split("\n");
+        
+        if (lines.length < 5) {
+            // Check if there are at least 5 lines for a complete reservation
+            return null; // Return null to indicate a parsing error
+        }
+
         int reservationId = Integer.parseInt(lines[0].substring("Reservation ID: ".length()));
         String customerName = lines[1].substring("Customer Name: ".length());
-        int carId = Integer.parseInt(lines[2].substring("Car ID: ".length()));
-        LocalDateTime pickupDateTime = LocalDateTime.parse(lines[3].substring("Pickup Date and Time: ".length()));
-        LocalDateTime dropoffDateTime = LocalDateTime.parse(lines[4].substring("Drop-off Date and Time: ".length()));
         
+        // Add error handling for parsing carId, pickupDateTime, and dropoffDateTime
+        int carId = tryParseInt(lines[2].substring("Car ID: ".length()));
+        LocalDateTime pickupDateTime = tryParseDateTime(lines[3].substring("Pickup Date and Time: ".length()));
+        LocalDateTime dropoffDateTime = tryParseDateTime(lines[4].substring("Drop-off Date and Time: ".length()));
+
+        if (carId == -1 || pickupDateTime == null || dropoffDateTime == null) {
+            return null; // Return null if any parsing errors occur
+        }
+
         return new Reservation(reservationId, customerName, carId, pickupDateTime, dropoffDateTime);
     }
+
+    // Helper method to attempt parsing an integer, returning -1 on failure
+    private static int tryParseInt(String str) {
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+        }
+    */
     
+
+    // Helper method to attempt parsing a LocalDateTime, returning null on failure
+   /* private static LocalDateTime tryParseDateTime(String str) {
+        try {
+            return LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+  */
     public static void displayReservations() {
         System.out.println("List of Reservations:");
-        
+
+        ArrayList<Reservation> reservations = ReservationsFileReader.readReservationsFromFile();
+
         if (reservations.isEmpty()) {
             System.out.println("No reservations found.");
         } else {
             for (Reservation reservation : reservations) {
                 System.out.println("Reservation ID: " + reservation.getReservationId());
                 System.out.println("Customer Name: " + reservation.getCustomerName());
-                System.out.println("Car ID: " + reservation.getCar().getId()); // Assuming CarInfo has a getId method
+                System.out.println("Car ID: " + reservation.getCar().getId());
                 System.out.println("Pickup Date and Time: " + reservation.getPickupDateTime());
                 System.out.println("Drop-off Date and Time: " + reservation.getDropoffDateTime());
                 System.out.println("--------------------------------------");
@@ -307,26 +340,79 @@ public class CarInfo2 {
         }
     }
     
-    public static CarInfo findCarById(int carId) {
-        for (String carInfoString : carInfoList) {
-            if (carInfoString.startsWith("ID#" + carId)) {
-                // Extract car information from the line and create a CarInfo object
-                String[] parts = carInfoString.split(" - ");
-                if (parts.length >= 2) {
-                    String brand = parts[0].substring(parts[0].indexOf(":") + 2);
-                    String model = parts[1].substring(parts[1].indexOf(":") + 2);
-                    // You can extract other properties similarly
+    public static String reservationsToString() {
+        StringBuilder result = new StringBuilder();
+        //result.append("List of Reservations:\n");
 
-                    // Create and return a CarInfo object
-                    return new CarInfo(carId, brand, model, carId, carInfoString, carInfoString, carId);
+        ArrayList<Reservation> reservations = ReservationsFileReader.readReservationsFromFile();
+
+        if (reservations.isEmpty()) {
+          //  result.append("No reservations found.\n");
+        } else {
+            for (Reservation reservation : reservations) {
+                result.append("Reservation ID: ").append(reservation.getReservationId()).append("\n");
+                result.append("Customer Name: ").append(reservation.getCustomerName()).append("\n");
+                result.append("Car ID: ").append(reservation.getCar().getId()).append("\n");
+                result.append("Pickup Date and Time: ").append(reservation.getPickupDateTime()).append("\n");
+                result.append("Drop-off Date and Time: ").append(reservation.getDropoffDateTime()).append("\n");
+                result.append("--------------------------------------\n");
+            }
+        }
+
+        return result.toString();
+    }
+   /* public static CarInfo findCarById(int carId) {
+        for (String carInfoString : carInfoList) {
+            // Extract car ID from the carInfoString
+            int idStartIndex = carInfoString.indexOf("ID#");
+            if (idStartIndex != -1) {
+                int idEndIndex = carInfoString.indexOf(" ", idStartIndex + 3); // Find the first space after "ID#"
+                if (idEndIndex == -1) {
+                    idEndIndex = carInfoString.length(); // If no space is found, consider the end of the string
+                }
+
+                String carInfoIdStr = carInfoString.substring(idStartIndex + 3, idEndIndex);
+                int carInfoId = Integer.parseInt(carInfoIdStr);
+
+                if (carInfoId == carId) {
+                    // Extract car information from the line and create a CarInfo object
+                    String[] parts = carInfoString.split(" - ");
+                    String brand = null;
+                    String model = null;
+                    int seats = -1; // Initialize to a default value
+                    String licensePlate = null;
+                    String engineType = null;
+                    int currentAutonomy = -1; // Initialize to a default value
+
+                    for (String part : parts) {
+                        if (part.startsWith("Brand: ")) {
+                            brand = part.substring("Brand: ".length());
+                        } else if (part.startsWith("Model: ")) {
+                            model = part.substring("Model: ".length());
+                        } else if (part.startsWith("Seats: ")) {
+                            seats = Integer.parseInt(part.substring("Seats: ".length()));
+                        } else if (part.startsWith("License Plate: ")) {
+                            licensePlate = part.substring("License Plate: ".length());
+                        } else if (part.startsWith("Engine Type: ")) {
+                            engineType = part.substring("Engine Type: ".length());
+                        } else if (part.startsWith("Current Autonomy: ")) {
+                            currentAutonomy = Integer.parseInt(part.substring("Current Autonomy: ".length()).split(" ")[0]);
+                        }
+                    }
+
+                    // Check if all required information was found
+                    if (brand != null || model != null || seats != -1 || licensePlate != null || engineType != null || currentAutonomy != -1) {
+                        return new CarInfo(carId, brand, model, seats, licensePlate, engineType, currentAutonomy);
+                    }
                 }
             }
         }
-        System.out.println(" Car not found");
+
+        System.out.println("Car not found");
         // Return null if the car is not found
         return null;
     }
-
+   */
     
     // Method to save car information to the file and ArrayList
     public static void saveCarInfoToFile(CarInfo carInfo) {
