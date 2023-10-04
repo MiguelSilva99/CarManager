@@ -22,8 +22,7 @@ public class Reservation {
     public Reservation(int reservationId, String customerName, int carId, LocalDateTime pickupDateTime, LocalDateTime dropoffDateTime) {
         this.reservationId = reservationId;
         this.customerName = customerName;
-        // You can retrieve the CarInfo object by searching for it based on carId
-        this.car = findCarById(carId); // Implement findCarById method
+        //this.car = findCarById(carId); // Implement findCarById method
         this.pickupDateTime = pickupDateTime;
         this.dropoffDateTime = dropoffDateTime;
     }
@@ -60,9 +59,9 @@ public class Reservation {
     }
  // Implement the findCarById method to retrieve a CarInfo object based on carId
     private CarInfo findCarById(int carId) {
-        // Implement this method to search for and return the CarInfo object based on carId
-        // You can use a loop to iterate through the list of CarInfo objects and find the one with the matching carId.
+       
     	
     	return findCarById(carId);
-    }
+   }
+   
 }

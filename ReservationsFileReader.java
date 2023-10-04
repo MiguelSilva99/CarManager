@@ -12,7 +12,7 @@ public class ReservationsFileReader {
 
     public static ArrayList<Reservation> readReservationsFromFile() {
         ArrayList<Reservation> reservations = new ArrayList<>();
-        int latestReservationId = 0; // Initialize with 0
+        
 
         try (BufferedReader reader = new BufferedReader(new FileReader(RESERVATION_FILENAME))) {
             String line;
@@ -25,7 +25,7 @@ public class ReservationsFileReader {
                 
 
                 if (line.startsWith("Reservation ID:")) {
-                	 latestReservationId++;
+                	 
                     if (reservation != null) {
                         reservations.add(reservation);
                     }
@@ -44,6 +44,7 @@ public class ReservationsFileReader {
         }
 
         return reservations;
+        
     }
     
    

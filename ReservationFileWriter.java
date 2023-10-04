@@ -7,17 +7,21 @@ import java.util.ArrayList;
 
 public class ReservationFileWriter {
     private static final String RESERVATION_FILENAME = "C:/Users/migue/Downloads/reservations.txt";
-
+ 
     public static void saveReservationsToFile(ArrayList<Reservation> reservations) {
         FileWriter writer = null;
+       
+        
+      
+        // Use the reservationId as needed
         try {
             writer = new FileWriter(RESERVATION_FILENAME, true);
             BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
             for (Reservation reservation : reservations) {
-                String formattedEntry = "Reservation ID: " + reservation.getReservationId() + "\n" +
-                                       "Customer Name: " + reservation.getCustomerName() + "\n" +
-                                       "Car ID: " + reservation.getCar().getId() + "\n" +
+                String formattedEntry ="Reservation ID: " + reservation.getReservationId() + "\n" +
+                					   "Customer Name: " + reservation.getCustomerName() + "\n" +
+                                       "Car ID: " +  "\n" +
                                        "Pickup Date and Time: " + reservation.getPickupDateTime() + "\n" +
                                        "Drop-off Date and Time: " + reservation.getDropoffDateTime() + "\n" +
                                        "--------------------------------------\n";
